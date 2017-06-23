@@ -6,11 +6,21 @@ package Control;
  * and open the template in the editor.
  */
 
+import Model.Distancia;
+import Model.Duracion;
+import Model.LatLng;
+import Model.Models;
 import Model.Ruta;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -121,18 +131,49 @@ public class WazeServlet extends HttpServlet {
         
 //        recibiendo la data desde el cliente
         data = jb.toString();
-        Ruta[] rutasList = gson.fromJson(data, Ruta[].class);
-
-//        print de prueba
-        for(int i=0;i<rutasList.length;i++){
-            System.out.println("Ruta " + i + ": Distancia: " + rutasList[i].getDistance().text);
+//        System.out.println(data);
+        
+        ArrayList<Ruta> rutasArray = new ArrayList<Ruta>();
+        
+        JsonParser jsonParser = new JsonParser();
+        JsonElement jsonElement = jsonParser.parse(data);
+        JsonArray jsonArray = jsonElement.getAsJsonArray();
+        for(int i=0;i<jsonArray.size();i++){
+            Ruta ruta = new Ruta();
+            JsonObject jsonItem = (JsonObject) jsonArray.get(i);
+//            System.out.println(jsonItem.toString());
+            ruta.setDistance(gson.fromJson(jsonItem.get("distance"), Distancia.class));            
+            ruta.setDuration(gson.fromJson(jsonItem.get("duration"), Duracion.class));
+            ruta.setEndAddress(gson.fromJson(jsonItem.get("endAddress"), String.class));
+            ruta.setStartAddress(gson.fromJson(jsonItem.get("startAddress"), String.class));
+            JsonObject endLoca = (JsonObject) jsonItem.get("endLocation");        
+            ruta.setEndLocation(new LatLng(endLoca.get("latitude").getAsDouble(),endLoca.get("longitude").getAsDouble()));
+            JsonObject startLoca = (JsonObject) jsonItem.get("startLocation");        
+            ruta.setStartLocation(new LatLng(startLoca.get("latitude").getAsDouble(),startLoca.get("longitude").getAsDouble()));
+            JsonArray jsonPoints = jsonItem.get("points").getAsJsonArray();
+            List<LatLng> puntos = new ArrayList<LatLng>();
+            for(int j=0;j<jsonPoints.size();j++){
+                JsonObject point = (JsonObject) jsonPoints.get(j);
+                LatLng latLng = new LatLng(point.get("latitude").getAsDouble(),point.get("longitude").getAsDouble());
+                puntos.add(latLng);
+            }
+            ruta.setPoints(puntos);
+            rutasArray.add(ruta);
         }
+        
+        System.out.println(rutasArray.toString());
+        
+//        print de prueba
+//        for(int i=0;i<rutasList.length;i++){
+//            System.out.println("Ruta " + i + ": Distancia: " + rutasList[i].getDistance().text);
+//            System.out.println(rutasList[i].toString());
+//        }
         
 //        Aqui hacer lo de la genetica --->
         
 
 //        <--- luego el array resultado tipo List<Ruta> enviarlo al cliente:
-        response.getWriter().write(gson.toJson(rutasList));
+        response.getWriter().write(gson.toJson(rutasArray));
     }
 
     /**

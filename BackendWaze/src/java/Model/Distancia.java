@@ -17,4 +17,10 @@ public class Distancia {
         this.text = text;
         this.value = value;
     }
+
+    @Override
+    public String toString() {
+        return "{" + "text : " + text + ", value : " + value + '}';
+    }
+    
 }

@@ -68,4 +68,11 @@ public class Ruta {
     public void setPoints(List<LatLng> points) {
         this.points = points;
     }
+
+    @Override
+    public String toString() {
+        return "Ruta : {" + "distance : " + distance.toString() + ", duration : " + duration.toString() + ", endAddress : " + endAddress + ", endLocation : " + endLocation.toString() + ", startAddress : " + startAddress + ", startLocation : " + startLocation.toString() + ", points : " + points.toString() + '}';
+    }
+    
+    
 }
