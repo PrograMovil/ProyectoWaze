@@ -2,6 +2,7 @@ package com.proyecto.waze;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -17,6 +18,7 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -102,6 +104,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View v) {
 //                Toast.makeText(MapsActivity.this, "Calculando ruta...", Toast.LENGTH_SHORT).show();
                 enviarDestino();
+                InputMethodManager inputManager = (InputMethodManager)
+                        getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+                        InputMethodManager.HIDE_NOT_ALWAYS);
             }
         });
 
@@ -312,7 +319,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    public class ServerSendTask extends AsyncTask<Void, Void, String> {
+    public class ServerSendTask extends AsyncTask<String, Void, String> {
 
         ServerSendTask(){
 
@@ -322,7 +329,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         protected void onPostExecute(String result) {
             if(result == null){
                 Toast.makeText(MapsActivity.this, "No hay rutas :(", Toast.LENGTH_SHORT).show();
-            }else{
+            }else if(result.equals("false : 500"))
+                Toast.makeText(MapsActivity.this, "Error al conectar con el servidor", Toast.LENGTH_SHORT).show();
+                else {
                 Toast.makeText(MapsActivity.this, "Rutas llegando...", Toast.LENGTH_SHORT).show();
                 Toast.makeText(MapsActivity.this, "Rutas: " + result, Toast.LENGTH_LONG).show();
 
@@ -391,7 +400,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         @Override
-        protected String doInBackground(Void... params) {
+        protected String doInBackground(String... params) {
 
 //            JSONObject postDataParams = new JSONObject();
 //            postDataParams.put("name", "abc");
