@@ -221,7 +221,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        Toast.makeText(this, "Origen: "+ origen + "| Destino: " + lugarDestino, Toast.LENGTH_SHORT).show();
 
         try {
-            new Router(this,origen,lugarDestino).iniciar();
+            new Router(this,origen,lugarDestino, getApplicationContext()).iniciar();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -330,7 +330,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             progressDialogRuta.dismiss();
             if(result == null){
                 Toast.makeText(MapsActivity.this, "No hay rutas :(", Toast.LENGTH_SHORT).show();
-            }else if(result.equals("false : 500"))
+            }else if(result.equals("error"))
                 Toast.makeText(MapsActivity.this, "Error al conectar con el servidor", Toast.LENGTH_SHORT).show();
                 else {
 //                Toast.makeText(MapsActivity.this, "Rutas llegando...", Toast.LENGTH_SHORT).show();
@@ -447,11 +447,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 }
                 else {
-                    return new String("false : "+responseCode);
+                    return new String("error");
                 }
             }
                 catch(Exception e){
-                return new String("Exception: " + e.getMessage());
+                return new String("error");
             }
 
 

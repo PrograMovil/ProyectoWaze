@@ -1,5 +1,6 @@
 package com.proyecto.waze;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
@@ -31,11 +32,13 @@ public class Router {
     MapsActivity map;
     String origen;
     String destino;
+    Context mContext;
 
-    public Router(MapsActivity map, String origen, String destino){
+    public Router(MapsActivity map, String origen, String destino, Context c){
         this.map = map;
         this.origen = origen;
         this.destino = destino;
+        mContext=c;
     }
 
     public void iniciar() throws UnsupportedEncodingException {
@@ -55,6 +58,9 @@ public class Router {
         @Override
         protected void onPostExecute(String res) {
 //            Toast.makeText(map, res, Toast.LENGTH_LONG).show();
+            if(res.equals("error")){
+                Toast.makeText(mContext, "Error al conectar con el servidor", Toast.LENGTH_SHORT).show();
+            }
             try {
                 parseJSon(res);
             } catch (JSONException e) {
@@ -78,12 +84,9 @@ public class Router {
 
                 return buffer.toString();
 
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                return "error";
             }
-            return null;
         }
     }
 
