@@ -21,6 +21,21 @@ public class Ruta {
 
     List<LatLng> points;
 
+    public Ruta() {
+    }
+
+    public Ruta(Distancia d, Duracion d2, String endAddress, LatLng endLocation, String startAddress, LatLng startLocation, List<LatLng> points) {
+        this.distance = d;
+        this.duration = d2;
+        this.endAddress = endAddress;
+        this.endLocation = endLocation;
+        this.startAddress = startAddress;
+        this.startLocation = startLocation;
+        this.points = points;
+    }
+
+    
+    
     public String getEndAddress() {
         return endAddress;
     }
@@ -68,11 +83,10 @@ public class Ruta {
     public void setPoints(List<LatLng> points) {
         this.points = points;
     }
-
+    
     @Override
     public String toString() {
         return "Ruta : {" + "distance : " + distance.toString() + ", duration : " + duration.toString() + ", endAddress : " + endAddress + ", endLocation : " + endLocation.toString() + ", startAddress : " + startAddress + ", startLocation : " + startLocation.toString() + ", points : " + points.toString() + '}';
     }
-    
     
 }

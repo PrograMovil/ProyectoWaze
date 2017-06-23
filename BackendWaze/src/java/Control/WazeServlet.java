@@ -9,7 +9,6 @@ package Control;
 import Model.Distancia;
 import Model.Duracion;
 import Model.LatLng;
-import Model.Models;
 import Model.Ruta;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;

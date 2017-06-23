@@ -2,6 +2,7 @@ package com.proyecto.waze;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Address;
@@ -53,7 +54,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    private static final int PERMISOS_LOCALIZACION = 0;
+    private static final int PERMISOS_GPS = 0;
     private GoogleMap mMap;
     private LocationManager locationManager;
     private Marker marker;
@@ -82,7 +83,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         destino = (EditText) findViewById(R.id.destino);
         crearRutaBtn = (Button) findViewById(R.id.buscarRutaBtn);
 
-        this.setUbicacion();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISOS_GPS);
+            return;
+        }
+        else{
+            this.setUbicacion();
+        }
 
         crearRutaBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -109,7 +117,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
-            Toast.makeText(this, "Por favor activa los permisos de la App y reinicia! ;)", Toast.LENGTH_LONG).show();
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISOS_GPS);
             return;
         }
         progressDialogUbicacion = ProgressDialog.show(this, "Por favor espere...","Buscando su ubicación...!", true);
@@ -300,10 +308,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
-            Toast.makeText(this, "Sin permisos!", Toast.LENGTH_SHORT).show();
             return;
         }
         mMap.setMyLocationEnabled(true);
+    }
+
+    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISOS_GPS: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    setUbicacion();
+                } else {
+                    Toast.makeText(getApplicationContext(),"Error de permisos, saliendo de la aplicacion", Toast.LENGTH_LONG).show();
+                    Intent a = new Intent(Intent.ACTION_MAIN);
+                    a.addCategory(Intent.CATEGORY_HOME);
+                    a.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(a);
+                    this.finish();
+                    return;
+                }
+            }
+        }
     }
 
 
