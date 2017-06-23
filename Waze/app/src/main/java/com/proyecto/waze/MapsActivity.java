@@ -255,7 +255,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void endRutaProcess(List<Ruta> rutas){
-        progressDialogRuta.dismiss();
+//        progressDialogRuta.dismiss();
 //        polylinePaths = new ArrayList<>();
 //        originMarkers = new ArrayList<>();
 //        destinationMarkers = new ArrayList<>();
@@ -327,13 +327,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         @Override
         protected void onPostExecute(String result) {
+            progressDialogRuta.dismiss();
             if(result == null){
                 Toast.makeText(MapsActivity.this, "No hay rutas :(", Toast.LENGTH_SHORT).show();
             }else if(result.equals("false : 500"))
                 Toast.makeText(MapsActivity.this, "Error al conectar con el servidor", Toast.LENGTH_SHORT).show();
                 else {
-                Toast.makeText(MapsActivity.this, "Rutas llegando...", Toast.LENGTH_SHORT).show();
-                Toast.makeText(MapsActivity.this, "Rutas: " + result, Toast.LENGTH_LONG).show();
+//                Toast.makeText(MapsActivity.this, "Rutas llegando...", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MapsActivity.this, "Rutas: " + result, Toast.LENGTH_LONG).show();
 
 
 //                aqui parsear el List<Ruta> que viene del server
