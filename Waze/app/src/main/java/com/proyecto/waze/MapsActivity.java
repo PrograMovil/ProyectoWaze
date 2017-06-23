@@ -31,6 +31,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,6 +52,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -254,33 +259,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         urlRequest = Variables.getURLBase();
         new ServerSendTask().execute();
 
-//        DESCOMENTAR PARA QUE SE PINTE LA RUTA EN EL MAPA
-//        for (Ruta ruta : RutasResult) {   
-//            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ruta.getStartLocation(), 16));
-////            ((TextView) findViewById(R.id.tvDuration)).setText(route.duration.text);
-////            ((TextView) findViewById(R.id.tvDistance)).setText(route.distance.text);
-//
-//            originMarkers.add(mMap.addMarker(new MarkerOptions()
-////                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_blue))
-//                    .title(ruta.getStartAddress())
-//                    .position(ruta.getStartLocation())));
-//
-//            destinationMarkers.add(mMap.addMarker(new MarkerOptions()
-////                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.end_green))
-//                    .title(ruta.getEndAddress())
-//                    .position(ruta.getEndLocation())));
-//
-//            PolylineOptions polylineOptions = new PolylineOptions().
-//                    geodesic(true).
-//                    color(Color.BLUE).
-//                    width(10);
-//
-//            for (int i = 0; i < ruta.getPoints().size(); i++) {
-//                polylineOptions.add(ruta.getPoints().get(i));
-//            }
-//
-//            polylinePaths.add(mMap.addPolyline(polylineOptions));
-//        }
+
+
     }
 
     /**
@@ -332,7 +312,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    public class ServerSendTask extends AsyncTask<String, Void, String> {
+    public class ServerSendTask extends AsyncTask<Void, Void, String> {
+
+        ServerSendTask(){
+
+        }
 
         @Override
         protected void onPostExecute(String result) {
@@ -342,14 +326,72 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Toast.makeText(MapsActivity.this, "Rutas llegando...", Toast.LENGTH_SHORT).show();
                 Toast.makeText(MapsActivity.this, "Rutas: " + result, Toast.LENGTH_LONG).show();
 
-//                aqui parsear el List<Ruta> que viene del server
-//                RutasResult = gson.fromJson(result,Ruta[].class);
 
+//                aqui parsear el List<Ruta> que viene del server
+                ArrayList<Ruta> rutasArray=new ArrayList<>();
+
+
+
+                JsonParser jsonParser = new JsonParser();
+                JsonElement jsonElement = jsonParser.parse(result);
+                JsonArray jsonArray = jsonElement.getAsJsonArray();
+                for(int i=0;i<jsonArray.size();i++){
+                    Ruta ruta = new Ruta();
+                    JsonObject jsonItem = (JsonObject) jsonArray.get(i);
+//            System.out.println(jsonItem.toString());
+                    ruta.setDistance(gson.fromJson(jsonItem.get("distance"), Distancia.class));
+                    ruta.setDuration(gson.fromJson(jsonItem.get("duration"), Duracion.class));
+                    ruta.setEndAddress(gson.fromJson(jsonItem.get("endAddress"), String.class));
+                    ruta.setStartAddress(gson.fromJson(jsonItem.get("startAddress"), String.class));
+                    JsonObject endLoca = (JsonObject) jsonItem.get("endLocation");
+                    ruta.setEndLocation(new LatLng(endLoca.get("latitude").getAsDouble(),endLoca.get("longitude").getAsDouble()));
+                    JsonObject startLoca = (JsonObject) jsonItem.get("startLocation");
+                    ruta.setStartLocation(new LatLng(startLoca.get("latitude").getAsDouble(),startLoca.get("longitude").getAsDouble()));
+                    JsonArray jsonPoints = jsonItem.get("points").getAsJsonArray();
+                    List<LatLng> puntos = new ArrayList<LatLng>();
+                    for(int j=0;j<jsonPoints.size();j++){
+                        JsonObject point = (JsonObject) jsonPoints.get(j);
+                        LatLng latLng = new LatLng(point.get("latitude").getAsDouble(),point.get("longitude").getAsDouble());
+                        puntos.add(latLng);
+                    }
+                    ruta.setPoints(puntos);
+                    rutasArray.add(ruta);
+                }
+
+
+
+                RutasResult = rutasArray;
+                for (Ruta ruta : RutasResult) {
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ruta.getStartLocation(), 16));
+//            ((TextView) findViewById(R.id.tvDuration)).setText(route.duration.text);
+//            ((TextView) findViewById(R.id.tvDistance)).setText(route.distance.text);
+
+                    originMarkers.add(mMap.addMarker(new MarkerOptions()
+//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_blue))
+                            .title(ruta.getStartAddress())
+                            .position(ruta.getStartLocation())));
+
+                    destinationMarkers.add(mMap.addMarker(new MarkerOptions()
+//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.end_green))
+                            .title(ruta.getEndAddress())
+                            .position(ruta.getEndLocation())));
+
+                    PolylineOptions polylineOptions = new PolylineOptions().
+                            geodesic(true).
+                            color(Color.BLUE).
+                            width(10);
+
+                    for (int i = 0; i < ruta.getPoints().size(); i++) {
+                        polylineOptions.add(ruta.getPoints().get(i));
+                    }
+
+                    polylinePaths.add(mMap.addPolyline(polylineOptions));
+                }
             }
         }
 
         @Override
-        protected String doInBackground(String... params) {
+        protected String doInBackground(Void... params) {
 
 //            JSONObject postDataParams = new JSONObject();
 //            postDataParams.put("name", "abc");

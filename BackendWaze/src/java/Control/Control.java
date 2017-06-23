@@ -26,11 +26,11 @@ public class Control {
         } catch (Exception ex) {
             Logger.getLogger(Control.class.getName()).log(Level.SEVERE, null, ex);
         }
-        ArrayList<Ruta> result=new ArrayList<>();
-        result.add(mejorRuta);
-        return result;
+        ArrayList<Ruta> aux=new ArrayList<>();
+        aux.add(mejorRuta);
+        return aux;
     }
-    
+    /*
     public static void main(String[] args) {
         ArrayList<Ruta> rutas=new ArrayList<>();
         
@@ -66,6 +66,6 @@ public class Control {
             System.out.println("Error al correr algoritmo");;
         }
         
-    }
+    }*/
     
 }

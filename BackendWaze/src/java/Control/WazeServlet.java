@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 public class WazeServlet extends HttpServlet {
     
     Gson gson = new Gson();
-
+    Control control=new Control();
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -169,6 +169,7 @@ public class WazeServlet extends HttpServlet {
 //        }
         
 //        Aqui hacer lo de la genetica --->
+          rutasArray=control.evaluarRutas(rutasArray);
         
 
 //        <--- luego el array resultado tipo List<Ruta> enviarlo al cliente:

@@ -75,7 +75,9 @@ public class Genetica {
             }
         }
         printSolution(bestSolutionSoFar, this.rutas);
-        return rutas.get(0);
+        int index = (Integer) bestSolutionSoFar.getGene(0).getAllele();
+        System.out.println("*/*/*/Ruta a enviar: "+rutas.get(index).toString()+" /*/*/*");
+        return rutas.get(index);
     }
     
     public void printSolution(IChromosome solution, List<Ruta> rutas)
