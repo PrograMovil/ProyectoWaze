@@ -15,19 +15,19 @@ public class LatLng implements UrlValue {
     /**
      * The latitude of this location.
      */
-    public double lat;
+    public double latitude;
 
     /**
      * The longitude of this location.
      */
-    public double lng;
+    public double longitude;
 
     /**
      * Construct a location with a latitude longitude pair.
      */
-    public LatLng(double lat, double lng) {
-      this.lat = lat;
-      this.lng = lng;
+    public LatLng(double latitude, double longitude) {
+      this.latitude = latitude;
+      this.longitude = longitude;
     }
 
     @Override
@@ -38,6 +38,6 @@ public class LatLng implements UrlValue {
     @Override
     public String toUrlValue() {
       // Enforce Locale to English for double to string conversion
-      return String.format(Locale.ENGLISH, "%.8f,%.8f", lat, lng);
+      return String.format(Locale.ENGLISH, "%.8f,%.8f", latitude, longitude);
     }
 }
