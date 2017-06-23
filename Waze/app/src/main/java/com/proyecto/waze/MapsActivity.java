@@ -9,10 +9,12 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,11 +29,27 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.gson.Gson;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -48,6 +66,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private List<Marker> originMarkers = new ArrayList<>();
     private List<Polyline> polylinePaths = new ArrayList<>();
 
+    List<Ruta> RutasResult;
+    Gson gson = new Gson();
+    String urlRequest;
+    String rutasJSON;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -218,32 +240,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        originMarkers = new ArrayList<>();
 //        destinationMarkers = new ArrayList<>();
 
-        for (Ruta ruta : rutas) {
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ruta.getStartLocation(), 16));
-//            ((TextView) findViewById(R.id.tvDuration)).setText(route.duration.text);
-//            ((TextView) findViewById(R.id.tvDistance)).setText(route.distance.text);
+        Toast.makeText(this, "Cantidad de Rutas alternativas: "+ rutas.size(), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "Rutas: " + gson.toJson(rutas), Toast.LENGTH_LONG).show();
+        rutasJSON = gson.toJson(rutas);
+        urlRequest = Variables.getURLBase();
+        new ServerSendTask().execute();
 
-            originMarkers.add(mMap.addMarker(new MarkerOptions()
-//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_blue))
-                    .title(ruta.getStartAddress())
-                    .position(ruta.getStartLocation())));
-
-            destinationMarkers.add(mMap.addMarker(new MarkerOptions()
-//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.end_green))
-                    .title(ruta.getEndAddress())
-                    .position(ruta.getEndLocation())));
-
-            PolylineOptions polylineOptions = new PolylineOptions().
-                    geodesic(true).
-                    color(Color.BLUE).
-                    width(10);
-
-            for (int i = 0; i < ruta.getPoints().size(); i++) {
-                polylineOptions.add(ruta.getPoints().get(i));
-            }
-
-            polylinePaths.add(mMap.addPolyline(polylineOptions));
-        }
+//        DESCOMENTAR PARA QUE SE PINTE LA RUTA EN EL MAPA
+//        for (Ruta ruta : RutasResult) {   
+//            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ruta.getStartLocation(), 16));
+////            ((TextView) findViewById(R.id.tvDuration)).setText(route.duration.text);
+////            ((TextView) findViewById(R.id.tvDistance)).setText(route.distance.text);
+//
+//            originMarkers.add(mMap.addMarker(new MarkerOptions()
+////                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_blue))
+//                    .title(ruta.getStartAddress())
+//                    .position(ruta.getStartLocation())));
+//
+//            destinationMarkers.add(mMap.addMarker(new MarkerOptions()
+////                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.end_green))
+//                    .title(ruta.getEndAddress())
+//                    .position(ruta.getEndLocation())));
+//
+//            PolylineOptions polylineOptions = new PolylineOptions().
+//                    geodesic(true).
+//                    color(Color.BLUE).
+//                    width(10);
+//
+//            for (int i = 0; i < ruta.getPoints().size(); i++) {
+//                polylineOptions.add(ruta.getPoints().get(i));
+//            }
+//
+//            polylinePaths.add(mMap.addPolyline(polylineOptions));
+//        }
     }
 
     /**
@@ -276,4 +305,100 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         mMap.setMyLocationEnabled(true);
     }
+
+
+    public class ServerSendTask extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected void onPostExecute(String result) {
+            if(result == null){
+                Toast.makeText(MapsActivity.this, "No hay rutas :(", Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(MapsActivity.this, "Rutas llegando...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MapsActivity.this, "Rutas: " + result, Toast.LENGTH_LONG).show();
+
+//                aqui parsear el List<Ruta> que viene del server
+//                RutasResult = gson.fromJson(result,Ruta[].class);
+
+            }
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+
+//            JSONObject postDataParams = new JSONObject();
+//            postDataParams.put("name", "abc");
+//            postDataParams.put("email", "abc@gmail.com");
+//            Log.e("params",postDataParams.toString());
+            try {
+                URL url = new URL(urlRequest); // here is your URL path
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000 /* milliseconds */);
+                conn.setConnectTimeout(15000 /* milliseconds */);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(rutasJSON);
+
+                writer.flush();
+                writer.close();
+                os.close();
+
+                int responseCode=conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+
+                    BufferedReader in=new BufferedReader(new
+                            InputStreamReader(
+                            conn.getInputStream()));
+
+                    StringBuffer sb = new StringBuffer("");
+                    String line="";
+
+                    while((line = in.readLine()) != null) {
+
+                        sb.append(line);
+                        break;
+                    }
+
+                    in.close();
+                    return sb.toString();
+
+                }
+                else {
+                    return new String("false : "+responseCode);
+                }
+            }
+                catch(Exception e){
+                return new String("Exception: " + e.getMessage());
+            }
+
+
+//            try {
+//                URL url = new URL(urlRequest);
+//                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+//                connection.setDoInput(true);
+//                connection.setRequestMethod("POST");
+//                connection.connect();
+//
+//                BufferedReader bf = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+//                String valueResult = bf.readLine();
+//                System.out.println("Result: " + valueResult);
+////                result = valueResult;
+//                return valueResult;
+//
+//            } catch (MalformedURLException e) {
+//                e.printStackTrace();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//            return null;
+        }
+    }
+
 }

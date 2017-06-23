@@ -1,13 +1,16 @@
-package com.proyecto.waze;
-
-import com.google.android.gms.maps.model.LatLng;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package Model;
 
 import java.util.List;
 
 /**
- * Created by SheshoVega on 27/05/2017.
+ *
+ * @author SheshoVega
  */
-
 public class Ruta {
     public Distancia distance;
     public Duracion duration;
